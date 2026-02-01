@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AS STORIES | Daily Post Portal</title>
+  <style>
+    :root {
+      --brand-red: #e60000;
+      --bg-dark: #121212;
+      --card-bg: #1e1e1e;
+      --text-white: #ffffff;
+      --text-dim: #a0a0a0;
+      --border: #333;
+    }
+
+    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: var(--bg-dark); color: var(--text-white); margin: 0; padding-bottom: 50px; }
+
+    /* Header */
+    header {
+      background: #000;
+      padding: 15px 20px;
+      border-bottom: 4px solid var(--brand-red);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-wrap { max-width: 1100px; margin: auto; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: white; text-decoration: none; }
+    .logo span { color: var(--brand-red); }
+
+    /* Layout */
+    .container { max-width: 1100px; margin: 25px auto; display: grid; grid-template-columns: 1fr 320px; gap: 25px; padding: 0 15px; }
+
+    /* Stories Section */
+    .editor-card { background: var(--card-bg); border-radius: 8px; padding: 20px; margin-bottom: 30px; border: 1px solid var(--border); }
+    h2 { font-size: 18px; text-transform: uppercase; border-left: 4px solid var(--brand-red); padding-left: 10px; margin-top: 0; }
+    
+    textarea { 
+      width: 100%; background: #252525; border: 1px solid var(--border); color: white; 
+      padding: 15px; border-radius: 5px; font-size: 16px; resize: vertical; margin-bottom: 10px;
+    }
+
+    .btn-post { 
+      background: var(--brand-red); color: white; border: none; padding: 12px 25px; 
+      font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase;
+    }
+
+    .story-feed { display: flex; flex-direction: column; gap: 20px; }
+    .story-item { background: var(--card-bg); border-radius: 8px; padding: 20px; border-left: 2px solid var(--brand-red); position: relative; }
+    .story-date { font-size: 12px; color: var(--brand-red); font-weight: bold; margin-bottom: 8px; }
+    .story-content { line-height: 1.6; color: var(--text-dim); }
+
+    /* Sidebar Tools */
+    .sidebar-card { background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border); }
+    .sidebar-card h3 { font-size: 14px; text-transform: uppercase; color: var(--text-white); margin-top: 0; }
+    
+    input, select { 
+      width: 100%; background: #252525; border: 1px solid var(--border); 
+      color: white; padding: 10px; margin-bottom: 10px; border-radius: 4px;
+    }
+
+    .tool-btn { background: #333; color: white; border: 1px solid var(--brand-red); width: 100%; padding: 8px; cursor: pointer; font-weight: bold; }
+    .tool-btn:hover { background: var(--brand-red); }
+
+    @media (max-width: 850px) { .container { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-wrap">
+    <a href="#" class="logo">AS <span>STORIES</span></a>
+    <div id="clock" style="font-size: 12px; font-weight: bold;"></div>
+  </div>
+</header>
+
+<div class="container">
+  
+  <main>
+    <div class="editor-card">
+      <h2>Post a Daily Story</h2>
+      <textarea id="storyInput" rows="4" placeholder="What happened today? Write your story..."></textarea>
+      <button class="btn-post" onclick="addStory()">Publish Story</button>
+    </div>
+
+    <div id="feed" class="story-feed">
+      </div>
+  </main>
+
+  <aside>
+    <div class="sidebar-card">
+      <h3>Quick Calculator</h3>
+      <input id="calc" placeholder="2+2*5" />
+      <button class="tool-btn" onclick="runCalc()">Calculate</button>
+      <p id="calcRes" style="font-size: 13px; color: var(--brand-red); margin-top: 8px;"></p>
+    </div>
+
+    <div class="sidebar-card">
+      <h3>Digital Compass</h3>
+      <div style="text-align: center; margin-bottom: 10px;">
+        <div id="needle" style="width: 2px; height: 40px; background: var(--brand-red); margin: auto; transition: 0.1s;"></div>
+      </div>
+      <button class="tool-btn" onclick="startComp()">Start Compass</button>
+    </div>
+
+    <div class="sidebar-card">
+      <h3>Password Gen</h3>
+      <button class="tool-btn" onclick="genPass()">Generate Secure</button>
+      <input id="passOut" readonly style="margin-top:10px; text-align:center;" />
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  // Clock update
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById('clock').innerText = now.toLocaleString();
+  }, 1000);
+
+  // --- STORY SYSTEM ---
+  function addStory() {
+    const input = document.getElementById('storyInput');
+    const feed = document.getElementById('feed');
+    
+    if (input.value.trim() === "") return;
+
+    const date = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    
+    const storyHTML = `
+      <div class="story-item">
+        <div class="story-date">${date}</div>
+        <div class="story-content">${input.value.replace(/\n/g, '<br>')}</div>
+      </div>
+    `;
+
+    feed.insertAdjacentHTML('afterbegin', storyHTML);
+    input.value = ""; // Clear input
+  }
+
+  // --- SIDEBAR TOOLS ---
+  function runCalc() {
+    try {
+      document.getElementById('calcRes').innerText = "Result: " + eval(document.getElementById('calc').value);
+    } catch(e) { document.getElementById('calcRes').innerText = "Invalid Math"; }
+  }
+
+  function genPass() {
+    let s = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@", p = "";
+    for(let i=0; i<12; i++) p += s[Math.floor(Math.random()*s.length)];
+    document.getElementById('passOut').value = p;
+  }
+
+  function startComp() {
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission().then(s => {
+        if(s === 'granted') window.addEventListener('deviceorientation', e => {
+          let a = e.webkitCompassHeading || (360 - e.alpha);
+          document.getElementById('needle').style.transform = `rotate(${a}deg)`;
+        });
+      });
+    } else {
+      window.addEventListener('deviceorientation', e => {
+        let a = e.webkitCompassHeading || (360 - e.alpha);
+        document.getElementById('needle').style.transform = `rotate(${a}deg)`;
+      });
+    }
+  }
+</script>
+
+</body>
+</html>

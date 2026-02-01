@@ -14,10 +14,9 @@
       --border: #333;
     }
 
-    * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { background: var(--bg-dark); color: var(--text-white); margin: 0; padding-bottom: 50px; }
 
-    /* Header */
     header {
       background: #000;
       padding: 15px 20px;
@@ -30,39 +29,43 @@
     .logo { font-size: 22px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; color: white; text-decoration: none; }
     .logo span { color: var(--brand-red); }
 
-    /* Layout */
     .container { max-width: 1100px; margin: 25px auto; display: grid; grid-template-columns: 1fr 320px; gap: 25px; padding: 0 15px; }
 
-    /* Stories Section */
     .editor-card { background: var(--card-bg); border-radius: 8px; padding: 20px; margin-bottom: 30px; border: 1px solid var(--border); }
     h2 { font-size: 18px; text-transform: uppercase; border-left: 4px solid var(--brand-red); padding-left: 10px; margin-top: 0; }
     
     textarea { 
       width: 100%; background: #252525; border: 1px solid var(--border); color: white; 
-      padding: 15px; border-radius: 5px; font-size: 16px; resize: vertical; margin-bottom: 10px;
+      padding: 15px; border-radius: 5px; font-size: 16px; resize: vertical; margin-bottom: 10px; outline: none;
     }
 
     .btn-post { 
       background: var(--brand-red); color: white; border: none; padding: 12px 25px; 
       font-weight: bold; cursor: pointer; border-radius: 4px; text-transform: uppercase;
     }
+    .btn-clear { background: transparent; color: var(--text-dim); border: none; cursor: pointer; font-size: 11px; float: right; }
 
     .story-feed { display: flex; flex-direction: column; gap: 20px; }
-    .story-item { background: var(--card-bg); border-radius: 8px; padding: 20px; border-left: 2px solid var(--brand-red); position: relative; }
+    .story-item { background: var(--card-bg); border-radius: 8px; padding: 20px; border-left: 4px solid var(--brand-red); position: relative; animation: fadeIn 0.4s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
     .story-date { font-size: 12px; color: var(--brand-red); font-weight: bold; margin-bottom: 8px; }
-    .story-content { line-height: 1.6; color: var(--text-dim); }
+    .story-content { line-height: 1.6; color: var(--text-dim); white-space: pre-wrap; }
 
-    /* Sidebar Tools */
     .sidebar-card { background: var(--card-bg); padding: 15px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border); }
     .sidebar-card h3 { font-size: 14px; text-transform: uppercase; color: var(--text-white); margin-top: 0; }
     
-    input, select { 
+    input { 
       width: 100%; background: #252525; border: 1px solid var(--border); 
-      color: white; padding: 10px; margin-bottom: 10px; border-radius: 4px;
+      color: white; padding: 10px; margin-bottom: 10px; border-radius: 4px; outline: none;
     }
 
-    .tool-btn { background: #333; color: white; border: 1px solid var(--brand-red); width: 100%; padding: 8px; cursor: pointer; font-weight: bold; }
+    .tool-btn { background: #333; color: white; border: 1px solid var(--brand-red); width: 100%; padding: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
     .tool-btn:hover { background: var(--brand-red); }
+
+    /* Compass UI Fix */
+    .compass-disk { width: 60px; height: 60px; border: 2px solid var(--border); border-radius: 50%; margin: 10px auto; position: relative; }
+    #needle { width: 4px; height: 30px; background: var(--brand-red); position: absolute; left: 28px; top: 5px; border-radius: 2px; transform-origin: bottom center; transition: transform 0.2s; }
 
     @media (max-width: 850px) { .container { grid-template-columns: 1fr; } }
   </style>
@@ -72,102 +75,134 @@
 <header>
   <div class="header-wrap">
     <a href="#" class="logo">AS <span>STORIES</span></a>
-    <div id="clock" style="font-size: 12px; font-weight: bold;"></div>
+    <div id="clock" style="font-size: 12px; font-weight: bold; font-family: monospace;"></div>
   </div>
 </header>
 
 <div class="container">
-  
   <main>
     <div class="editor-card">
+      <button class="btn-clear" onclick="clearStories()">Clear All</button>
       <h2>Post a Daily Story</h2>
       <textarea id="storyInput" rows="4" placeholder="What happened today? Write your story..."></textarea>
       <button class="btn-post" onclick="addStory()">Publish Story</button>
     </div>
 
-    <div id="feed" class="story-feed">
-      </div>
+    <div id="feed" class="story-feed"></div>
   </main>
 
   <aside>
     <div class="sidebar-card">
       <h3>Quick Calculator</h3>
-      <input id="calc" placeholder="2+2*5" />
+      <input id="calc" placeholder="e.g. 15 * 12" onkeypress="if(event.key==='Enter') runCalc()"/>
       <button class="tool-btn" onclick="runCalc()">Calculate</button>
-      <p id="calcRes" style="font-size: 13px; color: var(--brand-red); margin-top: 8px;"></p>
+      <p id="calcRes" style="font-size: 13px; color: var(--brand-red); margin-top: 8px; font-weight: bold;"></p>
     </div>
 
     <div class="sidebar-card">
       <h3>Digital Compass</h3>
-      <div style="text-align: center; margin-bottom: 10px;">
-        <div id="needle" style="width: 2px; height: 40px; background: var(--brand-red); margin: auto; transition: 0.1s;"></div>
-      </div>
-      <button class="tool-btn" onclick="startComp()">Start Compass</button>
+      <div class="compass-disk"><div id="needle"></div></div>
+      <button class="tool-btn" onclick="startComp()">Sync Sensors</button>
     </div>
 
     <div class="sidebar-card">
       <h3>Password Gen</h3>
       <button class="tool-btn" onclick="genPass()">Generate Secure</button>
-      <input id="passOut" readonly style="margin-top:10px; text-align:center;" />
+      <input id="passOut" readonly style="margin-top:10px; text-align:center; color: #00ff00; font-family: monospace;" onclick="this.select()" />
     </div>
   </aside>
-
 </div>
 
 <script>
-  // Clock update
-  setInterval(() => {
+  // Initial Load
+  document.addEventListener('DOMContentLoaded', () => {
+    loadStories();
+    updateClock();
+  });
+
+  // Clock
+  function updateClock() {
     const now = new Date();
     document.getElementById('clock').innerText = now.toLocaleString();
-  }, 1000);
+    setTimeout(updateClock, 1000);
+  }
 
-  // --- STORY SYSTEM ---
+  // --- STORY SYSTEM WITH PERSISTENCE ---
   function addStory() {
     const input = document.getElementById('storyInput');
+    if (!input.value.trim()) return;
+
+    const story = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+      text: input.value
+    };
+
+    const stories = JSON.parse(localStorage.getItem('as_stories') || '[]');
+    stories.unshift(story);
+    localStorage.setItem('as_stories', JSON.stringify(stories));
+    
+    input.value = "";
+    loadStories();
+  }
+
+  function loadStories() {
     const feed = document.getElementById('feed');
-    
-    if (input.value.trim() === "") return;
-
-    const date = new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    
-    const storyHTML = `
+    const stories = JSON.parse(localStorage.getItem('as_stories') || '[]');
+    feed.innerHTML = stories.map(s => `
       <div class="story-item">
-        <div class="story-date">${date}</div>
-        <div class="story-content">${input.value.replace(/\n/g, '<br>')}</div>
+        <div class="story-date">${s.date}</div>
+        <div class="story-content">${s.text}</div>
       </div>
-    `;
+    `).join('');
+  }
 
-    feed.insertAdjacentHTML('afterbegin', storyHTML);
-    input.value = ""; // Clear input
+  function clearStories() {
+    if(confirm("Delete all stories?")) {
+      localStorage.removeItem('as_stories');
+      loadStories();
+    }
   }
 
   // --- SIDEBAR TOOLS ---
   function runCalc() {
+    const input = document.getElementById('calc').value;
     try {
-      document.getElementById('calcRes').innerText = "Result: " + eval(document.getElementById('calc').value);
-    } catch(e) { document.getElementById('calcRes').innerText = "Invalid Math"; }
+      // Safer alternative to eval()
+      const result = new Function('return ' + input)();
+      document.getElementById('calcRes').innerText = "Result: " + (result || 0);
+    } catch(e) { 
+      document.getElementById('calcRes').innerText = "Invalid Math"; 
+    }
   }
 
   function genPass() {
-    let s = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@", p = "";
-    for(let i=0; i<12; i++) p += s[Math.floor(Math.random()*s.length)];
+    const s = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*";
+    let p = "";
+    for(let i=0; i<14; i++) p += s[Math.floor(Math.random()*s.length)];
     document.getElementById('passOut').value = p;
   }
 
   function startComp() {
-    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-      DeviceOrientationEvent.requestPermission().then(s => {
-        if(s === 'granted') window.addEventListener('deviceorientation', e => {
-          let a = e.webkitCompassHeading || (360 - e.alpha);
-          document.getElementById('needle').style.transform = `rotate(${a}deg)`;
-        });
-      });
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      DeviceOrientationEvent.requestPermission()
+        .then(state => {
+          if(state === 'granted') initOrientation();
+        })
+        .catch(console.error);
     } else {
-      window.addEventListener('deviceorientation', e => {
-        let a = e.webkitCompassHeading || (360 - e.alpha);
-        document.getElementById('needle').style.transform = `rotate(${a}deg)`;
-      });
+      initOrientation();
     }
+  }
+
+  function initOrientation() {
+    window.addEventListener('deviceorientation', e => {
+      let heading = e.webkitCompassHeading || (360 - e.alpha);
+      if(heading) {
+        document.getElementById('needle').style.transform = `rotate(${heading}deg)`;
+      }
+    }, true);
+    alert("Sensor active. If on mobile, rotate your phone!");
   }
 </script>
 
